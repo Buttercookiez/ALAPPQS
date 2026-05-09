@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ALAPP — Talatanungan</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161921;
+    --surface2: #1e2330;
+    --border: #2a3045;
+    --accent: #f97316;
+    --accent2: #fbbf24;
+    --text: #e8eaf0;
+    --muted: #7a8099;
+    --success: #22c55e;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 60px;
+    line-height: 1.6;
+  }
+  .hero {
+    background: linear-gradient(135deg, #0d0f14 0%, #1a1228 50%, #0d1520 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(249,115,22,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(249,115,22,0.12);
+    border: 1px solid rgba(249,115,22,0.3);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 99px;
+    margin-bottom: 20px;
+  }
+  .hero-badge::before { content: '●'; font-size: 8px; animation: blink 1.4s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .hero h1 {
+    font-size: clamp(26px, 5vw, 42px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p { color: var(--muted); font-size: 15px; max-width: 520px; margin: 0 auto 28px; }
+
+  .progress-wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+  .progress-bar-outer { background: var(--surface2); border-radius: 99px; height: 6px; overflow: hidden; }
+  .progress-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 8px;
+  }
+  .steps { display: flex; gap: 6px; justify-content: center; margin-top: 20px; }
+  .step-dot { width: 28px; height: 4px; border-radius: 99px; background: var(--surface2); transition: background 0.3s, width 0.3s; }
+  .step-dot.active { background: var(--accent); width: 40px; }
+  .step-dot.done { background: rgba(249,115,22,0.4); }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+  .section { display: none; animation: fadeUp 0.4s ease forwards; }
+  .section.active { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-header { margin: 36px 0 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(249,115,22,0.1);
+    border: 1px solid rgba(249,115,22,0.25);
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .section-title { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .card:focus-within { border-color: rgba(249,115,22,0.5); }
+  .q-label { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); line-height: 1.5; }
+  .q-hint { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 14px; }
+
+  input[type="text"], textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: vertical;
+  }
+  input[type="text"]:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.12);
+  }
+  textarea { min-height: 100px; }
+
+  /* Checkboxes & Radio — div-based, no double-fire */
+  .cb-group { display: flex; flex-direction: column; gap: 10px; }
+  .cb-subgroup-label {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent2);
+    margin: 14px 0 4px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cb-item, .rb-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    transition: border-color 0.18s, background 0.18s;
+    font-size: 14px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .cb-item:hover, .rb-item:hover { border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.05); }
+  .cb-item.checked, .rb-item.checked { border-color: rgba(249,115,22,0.55); background: rgba(249,115,22,0.09); }
+
+  .cb-box, .rb-box {
+    width: 19px; height: 19px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.18s;
+  }
+  .rb-box { border-radius: 50%; }
+  .cb-item.checked .cb-box { background: var(--accent); border-color: var(--accent); }
+  .cb-item.checked .cb-box::after {
+    content: ''; display: block;
+    width: 10px; height: 5px;
+    border-left: 2.5px solid #fff;
+    border-bottom: 2.5px solid #fff;
+    transform: rotate(-45deg) translateY(-1px);
+  }
+  .rb-item.checked .rb-box { background: var(--accent); border-color: var(--accent); }
+  .rb-item.checked .rb-box::after { content: ''; display: block; width: 7px; height: 7px; background: #fff; border-radius: 50%; }
+
+  .other-reveal { display: none; margin-top: 10px; }
+  .other-reveal.show { display: block; }
+
+  /* Platform tiles */
+  .platform-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .platform-tile {
+    cursor: pointer;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface2);
+    padding: 22px 16px;
+    text-align: center;
+    transition: border-color 0.18s, background 0.18s, transform 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .platform-tile:hover { border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.05); transform: translateY(-2px); }
+  .platform-tile.checked { border-color: var(--accent); background: rgba(249,115,22,0.1); transform: translateY(-2px); }
+  .platform-tile .tile-icon { font-size: 32px; margin-bottom: 10px; }
+  .platform-tile .tile-label { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .platform-tile .tile-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+  /* Nav */
+  .nav-row { display: flex; gap: 12px; justify-content: flex-end; margin-top: 28px; }
+  .btn {
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 26px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #ea6b10; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(249,115,22,0.35); }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover { background: #16a34a; transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+
+  /* Sending spinner */
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Thank you */
+  #thank-you { display: none; text-align: center; padding: 60px 24px; animation: fadeUp 0.5s ease forwards; }
+  #thank-you .ty-icon {
+    width: 76px; height: 76px;
+    background: rgba(34,197,94,0.12);
+    border: 2px solid var(--success);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 34px;
+  }
+  #thank-you h2 { font-size: 28px; font-weight: 700; margin-bottom: 10px; }
+  #thank-you p { color: var(--muted); font-size: 15px; max-width: 420px; margin: 0 auto 28px; }
+
+  /* Error toast */
+  .toast {
+    position: fixed;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #e53e3e;
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    transition: transform 0.3s ease;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 500px) {
+    .card { padding: 18px 16px; }
+    .hero { padding: 36px 16px 32px; }
+    .platform-grid { grid-template-columns: 1fr; }
+    .nav-row { flex-direction: column-reverse; }
+    .btn { width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">Talatanungan — ALAPP System</div>
+  <h1>ALAPP Questionnaire</h1>
+  <p>Tulungan ninyo kaming maunawaan ang inyong mga pangangailangan upang makapagdisenyo ng pinakamahusay na sistema para sa inyong operasyon.</p>
+  <div class="progress-wrap">
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar"></div>
+    </div>
+    <div class="progress-label">
+      <span id="progressText">Bahagi 1 ng 5</span>
+      <span id="progressPct">0%</span>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step-dot active" id="dot-1"></div>
+    <div class="step-dot" id="dot-2"></div>
+    <div class="step-dot" id="dot-3"></div>
+    <div class="step-dot" id="dot-4"></div>
+    <div class="step-dot" id="dot-5"></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ===== BAHAGI 1 ===== -->
+  <div class="section active" id="sec-1">
+    <div class="section-header">
+      <span class="section-num">BAHAGI 01</span>
+      <span class="section-title">Impormasyon ng Sumasagot</span>
+    </div>
+
+    <div class="card">
+      <div class="q-label">1. Buong Pangalan</div>
+      <div class="q-hint">Maikling sagot</div>
+      <input type="text" id="q1" name="q1_pangalan" placeholder="Ilagay ang inyong buong pangalan" />
+    </div>
+
+    <div class="card">
+      <div class="q-label">2. Posisyon / Tungkulin sa ALAPP</div>
+      <div class="q-hint">Maikling sagot</div>
+      <input type="text" id="q2" name="q2_posisyon" placeholder="hal. Operations Manager, Dispatcher…" />
+    </div>
+
+    <div class="card">
+      <div class="q-label">3. Numero ng Telepono o Email</div>
+      <div class="q-hint">Maikling sagot</div>
+      <input type="text" id="q3" name="q3_contact" placeholder="Numero ng telepono o email address" />
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-primary" onclick="goTo(2)">Susunod →</button>
+    </div>
+  </div>
+
+  <!-- ===== BAHAGI 2 ===== -->
+  <div class="section" id="sec-2">
+    <div class="section-header">
+      <span class="section-num">BAHAGI 02</span>
+      <span class="section-title">Karanasan sa Kasalukuyang Sistema</span>
+    </div>
+
+    <div class="card">
+      <div class="q-label">4. Anong mga serbisyo ang kasalukuyang inaalok ng inyong kumpanya?</div>
+      <div class="q-hint">Mga checkbox — piliin ang lahat ng naaangkop</div>
+      <div class="cb-group">
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Angkas / Ride Booking</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Padala / Delivery Service</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pabili / Purchase Service</div>
+        <div class="cb-item" id="other-q4-cb" onclick="toggleCb(this); revealOther('other-q4-cb','other-q4-box')">
+          <div class="cb-box"></div> Iba pa
+        </div>
+        <div class="other-reveal" id="other-q4-box">
+          <input type="text" name="q4_iba" placeholder="Pakisulat ang inyong ibang serbisyo…" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="q-label">5. Anong mga hamon o problema ang inyong nararanasan sa kasalukuyang sistema?</div>
+      <div class="q-hint">Talata</div>
+      <textarea name="q5_hamon" placeholder="Ilarawan ang mga hamon na inyong nararanasan…"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="q-label">6. Anong bahagi ng inyong kasalukuyang operasyon ang pinakanahihirapan at nangangailangan ng pagpapabuti?</div>
+      <div class="q-hint">Talata</div>
+      <textarea name="q6_pagpapabuti" placeholder="hal. Proseso ng booking, koordinasyon ng rider, bayad…"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="q-label">7. Paano ninyo pinamamahalaan ang mga booking, pagpapadala, at mga rider sa kasalukuyan?</div>
+      <div class="q-hint">Talata</div>
+      <textarea name="q7_pamamahala" placeholder="Ilarawan ang inyong kasalukuyang proseso o mga gamit na kagamitan…"></textarea>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goTo(1)">← Bumalik</button>
+      <button class="btn btn-primary" onclick="goTo(3)">Susunod →</button>
+    </div>
+  </div>
+
+  <!-- ===== BAHAGI 3 ===== -->
+  <div class="section" id="sec-3">
+    <div class="section-header">
+      <span class="section-num">BAHAGI 03</span>
+      <span class="section-title">Mga Gustong Tampok</span>
+    </div>
+
+    <div class="card">
+      <div class="q-label">8. Anong mga tampok ang nais ninyong isama sa iminungkahing sistema?</div>
+      <div class="q-hint">Mga checkbox — piliin ang lahat ng naaangkop</div>
+      <div class="cb-group">
+
+        <div class="cb-subgroup-label">👤 Tampok para sa Pasahero / Customer</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pagpaparehistro / Pag-login ng User</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pag-book ng Sakay</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Real-time na Pagsubaybay sa Rider</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pagtatantya ng Pamasahe</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pag-iskedyul ng Sakay</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Kasaysayan ng Booking</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Rating at Feedback</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Maramihang Paraan ng Pagbabayad</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Push Notifications</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Wallet System</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Promo Codes at Diskwento</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Emergency / SOS Button</div>
+
+        <div class="cb-subgroup-label">📦 Tampok para sa Padala</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pagsubaybay sa Parcel</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Patunay ng Paghahatid</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Mga Abiso sa Paghahatid</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pagtatantya ng Bayad sa Paghahatid</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pag-upload ng Larawan ng Parcel</div>
+
+        <div class="cb-subgroup-label">🛒 Tampok para sa Pabili</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Form ng Kahilingan ng Item</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pagpili ng Tindahan</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pag-upload ng Resibo</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pagsubaybay sa Cash Advance</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Espesyal na Tagubilin para sa Rider</div>
+
+        <div class="cb-subgroup-label">🏍 Tampok para sa Rider</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pag-verify ng Rider</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Dashboard ng Kita</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Integrasyon ng Mapa / Navigation</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Toggle ng Availability ng Rider</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Kasaysayan ng Biyahe</div>
+
+        <div class="cb-subgroup-label">⚙️ Tampok para sa Admin</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Admin Dashboard</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pamamahala ng Rider</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pagsubaybay sa Booking</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Mga Ulat at Pagsusuri</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Pamamahala ng Reklamo</div>
+        <div class="cb-item" onclick="toggleCb(this)"><div class="cb-box"></div> Sistema ng Anunsyo</div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goTo(2)">← Bumalik</button>
+      <button class="btn btn-primary" onclick="goTo(4)">Susunod →</button>
+    </div>
+  </div>
+
+  <!-- ===== BAHAGI 4 ===== -->
+  <div class="section" id="sec-4">
+    <div class="section-header">
+      <span class="section-num">BAHAGI 04</span>
+      <span class="section-title">Mga Inaasahan para sa Iminungkahing Sistema</span>
+    </div>
+
+    <div class="card">
+      <div class="q-label">9. Ano ang inyong mga inaasahan para sa iminungkahing sistema?</div>
+      <div class="q-hint">Talata</div>
+      <textarea name="q9_inaasahan" placeholder="Ibahagi ang inyong mga pangkalahatang inaasahan…"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="q-label">10. Anong mga tampok ang sa tingin ninyo ang PINAKAMAHALAGANG para sa inyong kumpanya?</div>
+      <div class="q-hint">Talata</div>
+      <textarea name="q10_pinakamahalagang" placeholder="Ilista o ilarawan ang mga pangunahing tampok…"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="q-label">11. Paano makakatulong ang iminungkahing sistema sa inyong mga rider at customer?</div>
+      <div class="q-hint">Talata</div>
+      <textarea name="q11_tulong" placeholder="Ilarawan ang mga inaasahang benepisyo…"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="q-label">12. Anong mga tampok ng seguridad o kaligtasan ang mahalaga para sa inyong sistema?</div>
+      <div class="q-hint">Talata</div>
+      <textarea name="q12_seguridad" placeholder="hal. Pag-verify ng ID, SOS, privacy ng datos…"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="q-label">13. Anong mga pagpapabuti ang nais ninyong makita sa inyong proseso ng booking at paghahatid?</div>
+      <div class="q-hint">Talata</div>
+      <textarea name="q13_proseso" placeholder="Ilarawan ang mga pagpapabuting inyong pinaniniwalaan…"></textarea>
+    </div>
+
+    <!-- Platform preference -->
+    <div class="card">
+      <div class="q-label">14. Anong uri ng plataporma ang inyong gustong gamitin para sa sistema ng ALAPP?</div>
+      <div class="q-hint">Isang pagpipilian lamang</div>
+      <div class="platform-grid">
+        <div class="platform-tile" onclick="selectPlatform(this)">
+          <div class="tile-icon">📱</div>
+          <div class="tile-label">Mobile App Lamang</div>
+          <div class="tile-desc">iOS at Android app para sa mga rider at customer</div>
+        </div>
+        <div class="platform-tile" onclick="selectPlatform(this)">
+          <div class="tile-icon">🌐</div>
+          <div class="tile-label">Website Lamang</div>
+          <div class="tile-desc">Web-based na sistema na maa-access sa anumang browser</div>
+        </div>
+        <div class="platform-tile" onclick="selectPlatform(this)">
+          <div class="tile-icon">📱🌐</div>
+          <div class="tile-label">App at Website</div>
+          <div class="tile-desc">Kumpletong plataporma — mobile app at web access</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goTo(3)">← Bumalik</button>
+      <button class="btn btn-primary" onclick="goTo(5)">Susunod →</button>
+    </div>
+  </div>
+
+  <!-- ===== BAHAGI 5 ===== -->
+  <div class="section" id="sec-5">
+    <div class="section-header">
+      <span class="section-num">BAHAGI 05</span>
+      <span class="section-title">Karagdagang Mungkahi</span>
+    </div>
+
+    <div class="card">
+      <div class="q-label">15. Mayroon ba kayong karagdagang mungkahi o mga hiniling na tampok para sa iminungkahing sistema?</div>
+      <div class="q-hint">Talata</div>
+      <textarea name="q15_mungkahi" placeholder="Anumang karagdagang tampok o ideya na nais ninyong imungkahi…"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="q-label">16. Handa ba kayong suportahan o subukan ang iminungkahing sistema sa hinaharap?</div>
+      <div class="q-hint">Isang pagpipilian lamang</div>
+      <div class="cb-group">
+        <div class="rb-item" onclick="selectRb(this)"><div class="rb-box"></div> Oo</div>
+        <div class="rb-item" onclick="selectRb(this)"><div class="rb-box"></div> Hindi</div>
+        <div class="rb-item" onclick="selectRb(this)"><div class="rb-box"></div> Marahil</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="q-label">17. Iba pang komento o rekomendasyon</div>
+      <div class="q-hint">Talata</div>
+      <textarea name="q17_komento" placeholder="Anumang huling saloobin, komento, o rekomendasyon…"></textarea>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-outline" onclick="goTo(4)">← Bumalik</button>
+      <button class="btn btn-success" id="submitBtn" onclick="submitForm()">✓ Isumite ang Talatanungan</button>
+    </div>
+  </div>
+
+  <!-- THANK YOU -->
+  <div id="thank-you">
+    <div class="ty-icon">✓</div>
+    <h2>Salamat po!</h2>
+    <p>Natanggap na ang inyong mga sagot. Lubos naming pinahahalagahan ang inyong panahon sa pagsagot ng talatanungang ito. Ang inyong mga kaalaman ay malaking tulong sa pagbuo ng sistema ng ALAPP.</p>
+    <button class="btn btn-outline" onclick="location.reload()">Magsumite ng isa pang sagot</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ============================================================
+  // FORMSPREE SETUP
+  // 1. Pumunta sa https://formspree.io at gumawa ng libreng account
+  // 2. Gumawa ng bagong form at kopyahin ang endpoint URL
+  // 3. Palitan ang FORMSPREE_URL sa ibaba ng inyong endpoint
+  // ============================================================
+  const FORMSPREE_URL = 'https://formspree.io/f/xvzlwvej';
+
+  let currentSection = 1;
+  const totalSections = 5;
+
+  function goTo(n) {
+    document.getElementById('sec-' + currentSection).classList.remove('active');
+    currentSection = n;
+    document.getElementById('sec-' + n).classList.add('active');
+    for (let i = 1; i <= totalSections; i++) {
+      const dot = document.getElementById('dot-' + i);
+      dot.className = 'step-dot' + (i === n ? ' active' : i < n ? ' done' : '');
+    }
+    updateProgress(n);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateProgress(n) {
+    const pct = Math.round(((n - 1) / totalSections) * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressText').textContent = 'Bahagi ' + n + ' ng ' + totalSections;
+    document.getElementById('progressPct').textContent = pct + '%';
+  }
+
+  function toggleCb(el) {
+    el.classList.toggle('checked');
+  }
+
+  function revealOther(cbId, boxId) {
+    const isChecked = document.getElementById(cbId).classList.contains('checked');
+    document.getElementById(boxId).classList.toggle('show', isChecked);
+  }
+
+  function selectRb(el) {
+    el.closest('.cb-group, .card').querySelectorAll('.rb-item').forEach(i => i.classList.remove('checked'));
+    el.classList.add('checked');
+  }
+
+  function selectPlatform(el) {
+    el.closest('.platform-grid').querySelectorAll('.platform-tile').forEach(t => t.classList.remove('checked'));
+    el.classList.add('checked');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // Collect all answers into one object
+  function collectAnswers() {
+    const data = {};
+
+    // Text inputs
+    data['1. Buong Pangalan']                   = document.getElementById('q1').value.trim();
+    data['2. Posisyon / Tungkulin']             = document.getElementById('q2').value.trim();
+    data['3. Contact / Email']                  = document.getElementById('q3').value.trim();
+
+    // Checkboxes Q4
+    const q4vals = [];
+    document.querySelectorAll('#sec-2 .cb-item.checked').forEach(el => {
+      const txt = el.textContent.trim();
+      if (txt === 'Iba pa') {
+        const extra = document.querySelector('#other-q4-box input').value.trim();
+        q4vals.push('Iba pa: ' + (extra || '—'));
+      } else {
+        q4vals.push(txt);
+      }
+    });
+    data['4. Mga Serbisyo'] = q4vals.join(', ') || '—';
+
+    // Textareas
+    const tas = document.querySelectorAll('textarea[name]');
+    const taLabels = {
+      q5_hamon:         '5. Mga Hamon sa Sistema',
+      q6_pagpapabuti:   '6. Bahaging Nangangailangan ng Pagpapabuti',
+      q7_pamamahala:    '7. Pamamahala ng Booking/Rider',
+      q9_inaasahan:     '9. Mga Inaasahan',
+      q10_pinakamahalagang: '10. Pinakamahalagang Tampok',
+      q11_tulong:       '11. Tulong sa Rider at Customer',
+      q12_seguridad:    '12. Seguridad / Kaligtasan',
+      q13_proseso:      '13. Pagpapabuti sa Proseso',
+      q15_mungkahi:     '15. Karagdagang Mungkahi',
+      q17_komento:      '17. Komento / Rekomendasyon',
+    };
+    tas.forEach(ta => {
+      const label = taLabels[ta.name] || ta.name;
+      data[label] = ta.value.trim() || '—';
+    });
+
+    // Checkboxes Q8
+    const q8vals = [];
+    document.querySelectorAll('#sec-3 .cb-item.checked').forEach(el => q8vals.push(el.textContent.trim()));
+    data['8. Mga Gustong Tampok'] = q8vals.join(', ') || '—';
+
+    // Platform
+    const platform = document.querySelector('.platform-tile.checked .tile-label');
+    data['14. Plataporma'] = platform ? platform.textContent.trim() : '—';
+
+    // Q16 radio
+    const q16 = document.querySelector('#sec-5 .rb-item.checked');
+    data['16. Susuportahan ang Sistema'] = q16 ? q16.textContent.trim() : '—';
+
+    return data;
+  }
+
+  async function submitForm() {
+    const btn = document.getElementById('submitBtn');
+
+    // Basic validation
+    if (!document.getElementById('q1').value.trim()) {
+      showToast('⚠️ Pakisulat ang inyong buong pangalan (Q1).');
+      return;
+    }
+
+    // Check if Formspree is configured
+    if (FORMSPREE_URL.includes('YOUR_FORM_ID')) {
+      // Demo mode — just show thank you
+      showThankYou();
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Isinusumite…';
+
+    const answers = collectAnswers();
+    const formData = new FormData();
+    Object.entries(answers).forEach(([k, v]) => formData.append(k, v));
+
+    try {
+      const res = await fetch(FORMSPREE_URL, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (res.ok) {
+        showThankYou();
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '✓ Isumite ang Talatanungan';
+        showToast('❌ May error. Subukan muli.');
+      }
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerHTML = '✓ Isumite ang Talatanungan';
+      showToast('❌ Walang koneksyon. Subukan muli.');
+    }
+  }
+
+  function showThankYou() {
+    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+    document.querySelector('.hero').style.display = 'none';
+    document.getElementById('thank-you').style.display = 'block';
+  }
+
+  updateProgress(1);
+</script>
+</body>
+</html>
